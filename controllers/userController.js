@@ -19,10 +19,9 @@ const getUsers = async (req, res, next) => {
 
 const deleteUser = async (req, res, next) => {
   try {
-    const { token } = req.body;
-    const retrieveToken = jwt.verify(token, process.env.JWT_SECRET);
-    const userEmail = retrieveToken.email;
-    const userDetails = await User.find({ email: userEmail });
+    const { id } = req.body;
+
+    const userDetails = await User.findById(id);
     if (!userDetails) {
       return res.status(404).json({ status: false, message: "User not found" });
     }
