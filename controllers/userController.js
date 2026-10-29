@@ -1,7 +1,8 @@
 const mongoose = require("mongoose");
 const User = require("../models/User");
 const jwt = require("jsonwebtoken");
-
+const dotenv = require("dotenv");
+dotenv.config();
 //READ: GET /api/users
 const getUsers = async (req, res, next) => {
   try {
@@ -16,6 +17,29 @@ const getUsers = async (req, res, next) => {
   }
 };
 
+const deleteUser = async (req, res, next) => {
+  try {
+    const { token } = req.body;
+    const retrieveToken = jwt.verify(token, process.env.JWT_SECRET);
+    const userEmail = retrieveToken.email;
+    const userDetails = await User.find({ email: userEmail });
+    if (!userDetails) {
+      return res.status(404).json({ status: false, message: "User not found" });
+    }
+    const userDeleted = await User.findByIdAndDelete(userDetails._id);
+    if (userDeleted) {
+      return res
+        .status(200)
+        .json({ status: true, message: "Deleted successfully" });
+    } else {
+      return res
+        .status(500)
+        .json({ status: false, message: "Failed to delete user" });
+    }
+  } catch (error) {
+    next(error);
+  }
+};
 //READ ONE: GET /api/users/:id
 const getUserById = async (req, res, next) => {
   try {
@@ -62,4 +86,4 @@ const fetchUser = async (req, res, next) => {
   }
 };
 
-module.exports = { getUsers, getUserById, fetchUser };
+module.exports = { getUsers, getUserById, fetchUser, deleteUser };
